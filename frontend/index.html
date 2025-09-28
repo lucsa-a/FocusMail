@@ -1,22 +1,36 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/reset.css">
+  <link rel="stylesheet" href="static/styles.css">
   <meta charset="UTF-8">
   <title>FocusMail</title>
 </head>
 <body>
-  <h1>Classificação de E-mails</h1>
+  <div id="boxPrincipal">
+    <header>
+      <a href="#">
+        <img src="static/assets/check_box.svg" id="logoImg"/>
+        <h1 id="logoTitulo">FocusMail</h1>
+      </a>
+    </header>
 
-  <h2>Enviar Arquivo</h2>
-  <form action="/processar_email_html" method="post" enctype="multipart/form-data">
-    <input type="file" name="arquivos" multiple>
-    <button type="submit">Enviar</button>
-  </form>
+    <div id="conteudo">
+      <h2>Classifique seus e-mails</h2>
 
-  <h2>Enviar Texto</h2>
-  <form action="/processar_email_html" method="post">
-    <textarea name="textos" rows="5" cols="50"></textarea>
-    <button type="submit">Enviar</button>
-  </form>
+      <form action="/processar_email_html" method="post">
+          <textarea name="textos" rows="5" placeholder="Digite ou cole o texto do e-mail"></textarea>
+          <button type="submit" id="classificarButton">Classificar</button>
+      </form>
+
+      <form action="/processar_email_html" method="post" enctype="multipart/form-data">
+          <label for="arquivosButton" id="custom-file-button">📁 Escolher arquivos</label>
+          <input type="file" name="arquivos" multiple id="arquivosButton" style="display: none;" onchange="this.form.submit()">
+      </form>
+    </div>
+  </div>
 </body>
 </html>

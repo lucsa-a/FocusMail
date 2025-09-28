@@ -1,0 +1,124 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #F5F6F6;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+}
+
+#boxPrincipal {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    height: 90%;
+    margin: auto;
+    background-color: #FFFFFF;
+    align-items: center;
+    border-radius: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+#boxPrincipal header {
+    height: 18%;
+    width: 100%;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    background-color: #009554;
+    font-size: 48px;
+    font-weight: 500;
+    display: flex;
+}
+
+#boxPrincipal header a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+#logoTitulo {
+    color: #FFFFFF;
+}
+
+#logoImg {
+    width: 64px;
+    height: 64px;
+    margin-left: .5em;
+    transition: transform 0.3s ease;
+}
+
+#logoImg:hover {
+    transform: scale(1.2);
+}
+
+textarea::placeholder,
+input::placeholder {
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    color: #8F9392;
+}
+
+#conteudo {
+    margin: auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3em;
+}
+
+h2 {
+    font-size:54px;
+    color:#013624;
+    font-weight: 500;
+}
+
+#classificarButton {
+    background-color: #009554;
+    font-family: 'Inter', sans-serif;
+    color:#FFFFFF;
+    border: none;
+    padding: .3em .5em .3em .5em;
+    width: 40%;
+    margin: .5em auto auto;
+    font-size: 36px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#classificarButton:hover {
+    background-color: #00834a;
+}
+
+textarea {
+    border-color: #C2C5CC;
+    border-radius: 15px;
+    padding: 1em;
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    height: 36px;
+    min-height: 36px;
+    max-height: 200px;
+    resize: vertical;
+    color: #1E1E1E;
+}
+
+#custom-file-button {
+    font-family: 'Inter', sans-serif;
+    padding: .3em .5em .3em .5em;
+    margin: 0 auto;
+    font-size: 28px;
+    background-color: #e6e6e6;
+    color: #1E1E1E;
+    cursor: pointer;
+    border-radius: 15px;
+    transition: background-color 0.3s ease;
+}
+
+#custom-file-button:hover {
+    background-color: #c3c3c3;
+}
