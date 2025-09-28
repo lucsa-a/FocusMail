@@ -22,7 +22,7 @@ except Exception as e:
     print(f"Aviso: Cliente Gemini não pôde ser inicializado. Respostas automáticas serão estáticas. Erro: {e}")
     client = None
 
-MODEL_PATH = "../model/model"
+MODEL_PATH = "lucsaa/classificador-de-emails"
 try:
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
     model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
@@ -94,9 +94,6 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
     except Exception as e:
         print(f"Erro ao chamar a API Gemini: {e}")
         return fallback_response
-
-
-# --- ENDPOINT PRINCIPAL ---
 
 @app.post("/processar_email")
 async def processar_email(
