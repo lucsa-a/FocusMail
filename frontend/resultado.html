@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultados</title>
+</head>
+<body>
+  <h1>Resultados da Classificação</h1>
+
+  {% if resultados %}
+    <ul>
+      {% for r in resultados %}
+        <li>
+          <strong>{{ r.filename }}</strong><br>
+          {% if r.erro %}
+            <span style="color:red;">Erro: {{ r.erro }}</span>
+          {% else %}
+            Categoria: {{ r.categoria }} <br>
+            Resposta sugerida: {{ r.resposta_sugerida }} <br>
+            Texto extraído: {{ r.texto_extraido }}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Nenhum resultado encontrado.</p>
+  {% endif %}
+
+  <br>
+  <a href="/">Voltar</a>
+</body>
+</html>

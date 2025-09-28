@@ -1,13 +1,15 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from utils import extract_text_from_pdf
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from typing import List, Optional
 import torch
 
 from google import genai
-from google.genai import types
 
 load_dotenv()
 
@@ -28,11 +30,12 @@ try:
     model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
     label_map = model.config.id2label
 except Exception as e:
-    print(f"ERRO: Não foi possível carregar o modelo de classificação local em {MODEL_PATH}. {e}")
+    print(f"ERRO: Não foi possível carregar o modelo em {MODEL_PATH}. {e}")
     label_map = {0: "Produtivo", 1: "Improdutivo"}
     model = None
 
 app = FastAPI(title="Email Classifier API")
+templates = Jinja2Templates(directory="../frontend")
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,15 +46,12 @@ app.add_middleware(
 )
 
 def classify_text(texto: str) -> str:
-    """Classifica o texto do email como Produtivo ou Improdutivo."""
     if model is None:
         return "Indefinido"
-
     encodings = tokenizer(texto, return_tensors="pt", truncation=True, padding=True)
     outputs = model(**encodings)
     pred = torch.argmax(outputs.logits, dim=-1).item()
     return label_map.get(pred, "Indefinido")
-
 
 def generate_gemini_response(categoria: str, texto_original: str) -> str:
     """Gera uma resposta contextual usando o modelo Gemini ou retorna um fallback."""
@@ -95,21 +95,20 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
         print(f"Erro ao chamar a API Gemini: {e}")
         return fallback_response
 
-@app.post("/processar_email")
-async def processar_email(
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.post("/processar_email_html")
+async def processar_email_html(
+    request: Request,
     arquivos: Optional[List[UploadFile]] = File(None),
     textos: Optional[List[str]] = Form(None)
 ):
     resultados = []
 
-    if model is None:
-        resultados.append({"aviso": "O modelo de classificação local não foi carregado. A classificação retornará 'Indefinido'."})
-
     def clean_text(text):
-         return text.strip() 
-    
-    def extract_text_from_pdf(file):
-        return "Texto extraído de um PDF de teste."
+        return text.strip()
 
     if arquivos:
         for arquivo in arquivos:
@@ -120,7 +119,6 @@ async def processar_email(
 
             arquivo.file.seek(0)
 
-            texto_extraido = ""
             if arquivo.filename.lower().endswith(".txt"):
                 texto_extraido = contents.decode("utf-8", errors="ignore")
             elif arquivo.filename.lower().endswith(".pdf"):
@@ -136,12 +134,11 @@ async def processar_email(
             texto_limpo = clean_text(texto_extraido)
             categoria = classify_text(texto_limpo)
             resposta = generate_gemini_response(categoria, texto_limpo)
-
             resultados.append({
                 "filename": arquivo.filename,
                 "categoria": categoria,
                 "resposta_sugerida": resposta,
-                "texto_extraido": texto_limpo[:300] + "..."
+                "texto_extraido": texto_limpo if len(texto_limpo) <= 300 else texto_limpo[:300] + "..."
             })
 
     if textos:
@@ -149,11 +146,9 @@ async def processar_email(
             if not texto.strip():
                 resultados.append({"filename": f"texto_{idx+1}", "erro": "Texto vazio"})
                 continue
-
             texto_limpo = clean_text(texto)
             categoria = classify_text(texto_limpo)
             resposta = generate_gemini_response(categoria, texto_limpo)
-
             resultados.append({
                 "filename": f"texto_{idx+1}",
                 "categoria": categoria,
@@ -161,4 +156,4 @@ async def processar_email(
                 "texto_extraido": texto_limpo[:300] + "..."
             })
 
-    return {"resultados": resultados}
+    return templates.TemplateResponse("resultado.html", {"request": request, "resultados": resultados})

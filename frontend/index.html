@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>FocusMail</title>
+</head>
+<body>
+  <h1>Classificação de E-mails</h1>
+
+  <h2>Enviar Arquivo</h2>
+  <form action="/processar_email_html" method="post" enctype="multipart/form-data">
+    <input type="file" name="arquivos" multiple>
+    <button type="submit">Enviar</button>
+  </form>
+
+  <h2>Enviar Texto</h2>
+  <form action="/processar_email_html" method="post">
+    <textarea name="textos" rows="5" cols="50"></textarea>
+    <button type="submit">Enviar</button>
+  </form>
+</body>
+</html>
