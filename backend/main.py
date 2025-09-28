@@ -109,9 +109,6 @@ async def processar_email_html(
 ):
     resultados = []
 
-    def clean_text(text):
-        return text.strip()
-
     if arquivos:
         for arquivo in arquivos:
             contents = await arquivo.read()
@@ -122,10 +119,10 @@ async def processar_email_html(
             arquivo.file.seek(0)
 
             if arquivo.filename.lower().endswith(".txt"):
-                texto_extraido = contents.decode("utf-8", errors="ignore")
+                texto = contents.decode("utf-8", errors="ignore")
             elif arquivo.filename.lower().endswith(".pdf"):
                 try:
-                    texto_extraido = extract_text_from_pdf(arquivo.file)
+                    texto = extract_text_from_pdf(arquivo.file)
                 except Exception as e:
                     resultados.append({"filename": arquivo.filename, "erro": f"Erro na extração do PDF: {e}"})
                     continue
@@ -133,29 +130,31 @@ async def processar_email_html(
                 resultados.append({"filename": arquivo.filename, "erro": "Formato não suportado"})
                 continue
 
-            texto_limpo = clean_text(texto_extraido)
-            categoria = classify_text(texto_limpo)
-            resposta = generate_gemini_response(categoria, texto_limpo)
+            if not texto.strip():
+                resultados.append({"filename": arquivo.filename, "erro": "Não foi possível encontrar texto no arquivo"})
+                continue
+
+            categoria = classify_text(texto)
+            resposta = generate_gemini_response(categoria, texto)
             resultados.append({
                 "filename": arquivo.filename,
                 "categoria": categoria,
                 "resposta_sugerida": resposta,
-                "texto_extraido": texto_limpo if len(texto_limpo) <= 300 else texto_limpo[:300] + "..."
+                "texto_extraido": texto if len(texto) <= 300 else texto[:300] + "..."
             })
 
     if textos:
         for idx, texto in enumerate(textos):
-            if not texto.strip():
-                resultados.append({"filename": f"texto_{idx+1}", "erro": "Texto vazio"})
+            if texto.strip() == "":
+                resultados.append({"Erro": "Não foi possível encontrar texto no arquivo."})
                 continue
-            texto_limpo = clean_text(texto)
-            categoria = classify_text(texto_limpo)
-            resposta = generate_gemini_response(categoria, texto_limpo)
+            categoria = classify_text(texto)
+            resposta = generate_gemini_response(categoria, texto)
             resultados.append({
                 "filename": f"texto_{idx+1}",
                 "categoria": categoria,
                 "resposta_sugerida": resposta,
-                "texto_extraido": texto_limpo[:300] + "..."
+                "texto_extraido": texto[:300] + "..."
             })
 
     return templates.TemplateResponse("resultado.html", {"request": request, "resultados": resultados})
