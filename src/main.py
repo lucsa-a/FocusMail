@@ -1,15 +1,13 @@
 import os
 from typing import List, Optional
-
-import torch
 from dotenv import load_dotenv
+from gradio_client import Client
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google import genai
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 from utils import extract_text_from_pdf, preprocess_text
 
@@ -18,10 +16,10 @@ load_dotenv()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
 
+# --- Gemini setup ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     print("ERRO: A chave GEMINI_API_KEY não foi carregada. Verifique seu arquivo .env.")
-    pass
 
 try:
     client = genai.Client(api_key=GEMINI_API_KEY)
@@ -29,16 +27,14 @@ except Exception as e:
     print(f"Aviso: Cliente Gemini não pôde ser inicializado. Respostas automáticas serão estáticas. Erro: {e}")
     client = None
 
-MODEL_PATH = "lucsaa/classificador-de-emails"
+# --- Hugging Face Space / Model API setup ---
 try:
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
-    label_map = model.config.id2label
+    hf_client = Client("lucsaa/FocusMail", hf_token=os.getenv("HF_API_TOKEN"))
 except Exception as e:
-    print(f"ERRO: Não foi possível carregar o modelo em {MODEL_PATH}. {e}")
-    label_map = {0: "Produtivo", 1: "Improdutivo"}
-    model = None
+    print(f"Aviso: Cliente Hugging Face não pôde ser inicializado. Erro: {e}")
+    hf_client = None
 
+# --- FastAPI setup ---
 app = FastAPI(title="Email Classifier API")
 app.mount("/static", StaticFiles(directory="../frontend/styles"), name="static")
 templates = Jinja2Templates(directory="../frontend")
@@ -51,23 +47,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# --- Funções ---
 def classify_text(texto: str) -> str:
-    if model is None:
+    """Classifica o texto usando o Gradio Client."""
+    if not texto.strip():
         return "Indefinido"
 
     texto = preprocess_text(texto)
+    
+    if hf_client is None:
+        return "Indefinido"
 
-    encodings = tokenizer(texto, return_tensors="pt", truncation=True, padding=True)
-    outputs = model(**encodings)
-    pred = torch.argmax(outputs.logits, dim=-1).item()
-    return label_map.get(pred, "Indefinido")
-
+    try:
+        resultado = hf_client.predict(
+            texto=texto,
+            api_name="/predict"
+        )
+        return resultado.capitalize()
+    except Exception as e:
+        print(f"Erro ao chamar o Hugging Face Space (Gradio Client): {e}")
+        return "Indefinido"
 
 def generate_gemini_response(categoria: str, texto_original: str) -> str:
-    """Gera uma resposta contextual usando o modelo Gemini ou retorna um fallback."""
-
-    fallback_response = "Obrigado pelo envio. Recebemos sua mensagem, mas a resposta automática dinâmica está indisponível."
+    """Gera uma resposta contextual usando o modelo Gemini ou retorna fallback."""
+    fallback_response = "Obrigado pelo envio. Resposta automática dinâmica indisponível."
     if categoria.lower() == "produtivo":
         fallback_response = "Obrigado pelo envio, iremos avaliar e daremos retorno em breve."
     elif categoria.lower() == "improdutivo":
@@ -80,16 +83,16 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
     Você é um assistente de resposta automática de e-mails de uma empresa do setor financeiro.
     O e-mail foi classificado como: **{categoria.upper()}**.
 
-    Instruções para a resposta:
-    1. Seja formal e profissional (setor financeiro).
-    2. A resposta deve ter no máximo 3 frases curtas.
-    3. Se a categoria for **PRODUTIVO**, a resposta deve confirmar o recebimento e indicar o próximo passo de forma profissional.
-    4. Se a categoria for **IMPRODUTIVO**, a resposta deve ser educada e dispensar a necessidade de ação ou, se possível, direcionar para um canal não-corporativo.
-    5. A resposta deve ser contextualizada ao Corpo do E-mail Original.
+    Instruções:
+    1. Seja formal e profissional.
+    2. Máx. 3 frases curtas.
+    3. Para PRODUTIVO: confirme recebimento e indique próximo passo.
+    4. Para IMPRODUTIVO: educado, dispensando ação.
+    5. Contextualize ao Corpo do E-mail Original.
 
     Corpo do E-mail Original:
     ---
-    {texto_original[:1000]} # Limita o texto para economizar tokens
+    {texto_original[:1000]}
     ---
 
     Gere APENAS o corpo da resposta:
@@ -101,22 +104,20 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
             contents=prompt
         )
         return response.text.strip()
-
     except Exception as e:
         print(f"Erro ao chamar a API Gemini: {e}")
         return fallback_response
 
-
+# --- Endpoints ---
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-
 @app.post("/processar_email_html")
 async def processar_email_html(
-        request: Request,
-        arquivos: Optional[List[UploadFile]] = File(None),
-        textos: Optional[List[str]] = Form(None)
+    request: Request,
+    arquivos: Optional[List[UploadFile]] = File(None),
+    textos: Optional[List[str]] = Form(None)
 ):
     resultados = []
 
@@ -157,8 +158,7 @@ async def processar_email_html(
     if textos:
         for idx, texto in enumerate(textos):
             if texto.strip() == "":
-                resultados.append(
-                    {"filename": f"texto_{idx + 1}", "erro": "Não foi possível encontrar texto no arquivo"})
+                resultados.append({"filename": f"texto_{idx + 1}", "erro": "Não foi possível encontrar texto no arquivo"})
                 continue
             categoria = classify_text(texto)
             resposta = generate_gemini_response(categoria, texto)
