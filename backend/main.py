@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from utils import extract_text_from_pdf
+from utils import extract_text_from_pdf, preprocess_text
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from typing import List, Optional
 import torch
@@ -50,6 +50,9 @@ app.add_middleware(
 def classify_text(texto: str) -> str:
     if model is None:
         return "Indefinido"
+    
+    texto = preprocess_text(texto)
+
     encodings = tokenizer(texto, return_tensors="pt", truncation=True, padding=True)
     outputs = model(**encodings)
     pred = torch.argmax(outputs.logits, dim=-1).item()
@@ -154,7 +157,7 @@ async def processar_email_html(
                 "filename": f"texto_{idx+1}",
                 "categoria": categoria,
                 "resposta_sugerida": resposta,
-                "texto_extraido": texto[:300] + "..."
+                "texto_extraido": ttexto if len(texto) <= 300 else texto[:300] + "..."
             })
 
     # 🔹 Calcula estatísticas de produtividade
