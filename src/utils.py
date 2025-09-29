@@ -5,6 +5,11 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 
+try:
+    stopwords.words('portuguese')
+except LookupError:
+    nltk.download('stopwords')
+
 nltk.data.path.append("./nltk_data") 
 
 stop_words = set(stopwords.words('portuguese'))
