@@ -4,7 +4,10 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 import PyPDF2
 
-nltk.data.path.append("./nltk_data")
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.data.path.append("./nltk_data")
 
 stop_words = set(stopwords.words('portuguese'))
 stemmer = SnowballStemmer('portuguese')
