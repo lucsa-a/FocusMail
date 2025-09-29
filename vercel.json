@@ -11,5 +11,10 @@
       "src": "/(.*)",
       "dest": "src/main.py"
     }
-  ]
+  ],
+  "functions": {
+    "src/main.py": {
+      "includeFiles": "src/**"
+    }
+  }
 }
