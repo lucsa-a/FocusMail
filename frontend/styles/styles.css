@@ -4,18 +4,20 @@ body {
     height: 100vh;
     width: 100vw;
     display: flex;
+    overflow-x: hidden;
 }
 
 #boxPrincipal {
     display: flex;
     flex-direction: column;
     width: 90%;
-    height: 90%;
-    margin: auto;
+    min-height: 90vh;
+    margin: 2em auto;
     background-color: #FFFFFF;
     align-items: center;
     border-radius: 25px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    overflow-y: auto;
 }
 
 form {
@@ -25,7 +27,8 @@ form {
 }
 
 #boxPrincipal header {
-    height: 18%;
+    height: 115px;
+    flex-shrink: 0;
     width: 100%;
     border-top-left-radius: 25px;
     border-top-right-radius: 25px;
@@ -121,4 +124,97 @@ textarea {
 
 #custom-file-button:hover {
     background-color: #c3c3c3;
+}
+
+strong {
+    font-weight: 600;
+}
+
+ul {
+    display:flex;
+    flex-direction: column;
+    width: 57%;
+    gap:1em;
+    justify-content: center;
+    margin-bottom: 1em;
+}
+
+li {
+    display: flex;
+    flex-direction: column;
+    gap:.5em;
+    padding:1em;
+    border-radius: 5px;
+}
+
+#tituloResultados {
+    margin: 1em 0;
+}
+
+.resultado-item {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    background-color: #dcf6cb;
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+.arquivo {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+  
+.nome-arquivo {
+    font-weight: 500;
+}
+  
+.texto, .resposta {
+    display: block;
+    word-break: break-word;
+}
+
+.resultado-item.produtivo {
+    background-color: #dcf6cb;
+}
+
+.resultado-item.improdutivo {
+    background-color: #ffc6c6;
+}
+
+.resultado-item.erro {
+    background-color: #ffffff;
+    border: 1px solid red;
+}
+
+progress {
+    width: 57%;
+    flex-shrink: 0;
+    height: 15px;
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 2em;
+}
+
+progress::-webkit-progress-bar {
+    background-color: #EF6769;
+}
+  
+progress::-webkit-progress-value {
+    background-color: #009651;
+}
+  
+progress::-moz-progress-bar {
+    background-color: #009651;
+}
+
+#porcentagens {
+    width: 57%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1em;
+    font-size: 25px;
 }

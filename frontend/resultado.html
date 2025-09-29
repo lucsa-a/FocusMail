@@ -1,32 +1,68 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/reset.css">
+  <link rel="stylesheet" href="static/styles.css">
   <meta charset="UTF-8">
   <title>Resultados - FocusMail</title>
 </head>
 <body>
-  <h1>Resultados da Classificação</h1>
+  <div id="boxPrincipal">
+    <header>
+      <a href="/">
+        <img src="static/assets/check_box.svg" id="logoImg"/>
+        <h1 id="logoTitulo">FocusMail</h1>
+      </a>
+    </header>
+    <h2 id="tituloResultados">Resultados da Classificação</h2>
 
-  {% if resultados %}
-    <ul>
-      {% for r in resultados %}
-        <li>
-          <strong>{{ r.filename }}</strong><br>
-          {% if r.erro %}
-            <span style="color:red;">Erro: {{ r.erro }}</span>
-          {% else %}
-            Categoria: {{ r.categoria }} <br>
-            Resposta sugerida: {{ r.resposta_sugerida }} <br>
-            Texto extraído: {{ r.texto_extraido }}
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Nenhum resultado encontrado.</p>
-  {% endif %}
+    <progress id="produtividade" value="{{ porcentagem_produtivos }}" max="100">
+        {{ porcentagem_produtivos }}%
+    </progress>
+    
+    <div id="porcentagens">
+        <div class="porcentagem">
+            <p>Produtivo</p>
+            <strong>{{ porcentagem_produtivos }}%</strong>
+        </div>
+        <div class="porcentagem">
+            <p>Improdutivo</p>
+            <strong>{{ 100 - porcentagem_produtivos }}%</strong>
+        </div>
+    </div>
 
-  <br>
-  <a href="/">Voltar</a>
+    {% if resultados %}
+        <ul>
+        {% for r in resultados %}
+        <li class="resultado-item 
+          {% if r.get('categoria') %}
+            {% if r.categoria.lower() == 'produtivo' %}produtivo
+            {% elif r.categoria.lower() == 'improdutivo' %}improdutivo
+            {% else %}erro{% endif %}
+          {% else %}erro{% endif %}">
+              {% if r.filename.endswith('.txt') or r.filename.endswith('.pdf') %}
+              <div class="arquivo"><strong>Arquivo:</strong> <span class="nome-arquivo">{{ r.filename }}</span></div>
+              {% endif %}
+            
+              {% if r.erro %}
+                <div class="erro" role="alert"><span>Erro: {{ r.erro }}</span></div>
+              {% else %}
+                <strong>{{ r.categoria }}</strong>
+                <div class="texto">{{ r.texto_extraido }}</div>
+                <div class="resposta">
+                  <strong>Resposta sugerida:</strong>
+                  <div class="resposta-texto">{{ r.resposta_sugerida }}</div>
+                </div>
+            {% endif %}
+          </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhum resultado encontrado.</p>
+    {% endif %}
+  </div>
 </body>
 </html>

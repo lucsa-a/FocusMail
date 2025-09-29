@@ -146,7 +146,7 @@ async def processar_email_html(
     if textos:
         for idx, texto in enumerate(textos):
             if texto.strip() == "":
-                resultados.append({"Erro": "Não foi possível encontrar texto no arquivo."})
+                resultados.append({"filename": f"texto_{idx+1}", "erro": "Não foi possível encontrar texto no arquivo"})
                 continue
             categoria = classify_text(texto)
             resposta = generate_gemini_response(categoria, texto)
@@ -157,4 +157,20 @@ async def processar_email_html(
                 "texto_extraido": texto[:300] + "..."
             })
 
-    return templates.TemplateResponse("resultado.html", {"request": request, "resultados": resultados})
+    # 🔹 Calcula estatísticas de produtividade
+    total = len([r for r in resultados if "erro" not in r])
+    produtivos = len([r for r in resultados if r.get("categoria", "").lower() == "produtivo"])
+    improdutivos = len([r for r in resultados if r.get("categoria", "").lower() == "improdutivo"])
+
+    porcentagem_produtivos = int((produtivos / total) * 100) if total > 0 else 0
+    porcentagem_improdutivos = 100 - porcentagem_produtivos if total > 0 else 0
+
+    return templates.TemplateResponse(
+        "resultado.html",
+        {
+            "request": request,
+            "resultados": resultados,
+            "porcentagem_produtivos": porcentagem_produtivos,
+            "porcentagem_improdutivos": porcentagem_improdutivos
+        }
+    )
