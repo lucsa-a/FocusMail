@@ -159,7 +159,6 @@ async def processar_email_html(
                 "texto_extraido": texto if len(texto) <= 300 else texto[:300] + "..."
             })
 
-    # 🔹 Calcula estatísticas de produtividade
     total = len([r for r in resultados if "erro" not in r])
     produtivos = len([r for r in resultados if r.get("categoria", "").lower() == "produtivo"])
     improdutivos = len([r for r in resultados if r.get("categoria", "").lower() == "improdutivo"])
