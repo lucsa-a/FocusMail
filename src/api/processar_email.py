@@ -1,0 +1,33 @@
+from backend.main import generate_gemini_response, classify_text
+from fastapi import FastAPI
+from mangum import Mangum
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Optional
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class EmailInput(BaseModel):
+    textos: Optional[List[str]] = None
+
+@app.post("/processar_email")
+async def processar_email(data: EmailInput):
+    resultados = []
+    if data.textos:
+        for idx, texto in enumerate(data.textos):
+            categoria = classify_text(texto)
+            resposta = generate_gemini_response(categoria, texto)
+            resultados.append({
+                "filename": f"texto_{idx+1}",
+                "categoria": categoria,
+                "resposta_sugerida": resposta,
+            })
+    return {"resultados": resultados}
+
+handler = Mangum(app)
