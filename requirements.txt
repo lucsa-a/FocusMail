@@ -7,3 +7,4 @@ transformers
 python-dotenv
 jinja2
 google-genai
+gradio_client
