@@ -8,7 +8,7 @@ from nltk.stem import SnowballStemmer
 try:
     nltk.data.find('corpora/stopwords')
 except LookupError:
-    nltk.download('stopwords')
+    nltk.download('stopwords', download_dir=os.path.join(os.path.dirname(__file__), "nltk_data"))
 
 stop_words = set(stopwords.words('portuguese'))
 stemmer = SnowballStemmer('portuguese')
