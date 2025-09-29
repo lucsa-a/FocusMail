@@ -7,7 +7,7 @@ import PyPDF2
 try:
     nltk.data.find('corpora/stopwords')
 except LookupError:
-    nltk.data.path.append("./nltk_data")
+    nltk.download('stopwords')
 
 stop_words = set(stopwords.words('portuguese'))
 stemmer = SnowballStemmer('portuguese')
