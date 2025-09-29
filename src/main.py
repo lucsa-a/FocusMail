@@ -8,9 +8,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google import genai
+from pathlib import Path
 
 from src.utils import extract_text_from_pdf, preprocess_text
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
 if __name__ == "__main__":
@@ -36,8 +38,12 @@ except Exception as e:
 
 # --- FastAPI setup ---
 app = FastAPI(title="Email Classifier API")
-app.mount("/static", StaticFiles(directory="../frontend/styles"), name="static")
-templates = Jinja2Templates(directory="../frontend")
+
+STATIC_FILES_DIR = BASE_DIR / "frontend" / "styles"
+TEMPLATES_DIR = BASE_DIR / "frontend"
+
+app.mount("/static", StaticFiles(directory=STATIC_FILES_DIR), name="static")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 app.add_middleware(
     CORSMiddleware,
@@ -53,7 +59,7 @@ def classify_text(texto: str) -> str:
     if not texto.strip():
         return "Indefinido"
 
-    texto = preprocess_text(texto)
+    texto = preprocess_text(texto) 
     
     if hf_client is None:
         return "Indefinido"
