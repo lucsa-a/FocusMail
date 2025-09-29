@@ -15,7 +15,6 @@ load_dotenv()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
@@ -50,10 +49,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def classify_text(texto: str) -> str:
     if model is None:
         return "Indefinido"
-    
+
     texto = preprocess_text(texto)
 
     encodings = tokenizer(texto, return_tensors="pt", truncation=True, padding=True)
@@ -61,9 +61,10 @@ def classify_text(texto: str) -> str:
     pred = torch.argmax(outputs.logits, dim=-1).item()
     return label_map.get(pred, "Indefinido")
 
+
 def generate_gemini_response(categoria: str, texto_original: str) -> str:
     """Gera uma resposta contextual usando o modelo Gemini ou retorna um fallback."""
-    
+
     fallback_response = "Obrigado pelo envio. Recebemos sua mensagem, mas a resposta automática dinâmica está indisponível."
     if categoria.lower() == "produtivo":
         fallback_response = "Obrigado pelo envio, iremos avaliar e daremos retorno em breve."
@@ -91,27 +92,29 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
 
     Gere APENAS o corpo da resposta:
     """
-    
+
     try:
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt
         )
         return response.text.strip()
-        
+
     except Exception as e:
         print(f"Erro ao chamar a API Gemini: {e}")
         return fallback_response
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
 @app.post("/processar_email_html")
 async def processar_email_html(
-    request: Request,
-    arquivos: Optional[List[UploadFile]] = File(None),
-    textos: Optional[List[str]] = Form(None)
+        request: Request,
+        arquivos: Optional[List[UploadFile]] = File(None),
+        textos: Optional[List[str]] = Form(None)
 ):
     resultados = []
 
@@ -152,12 +155,13 @@ async def processar_email_html(
     if textos:
         for idx, texto in enumerate(textos):
             if texto.strip() == "":
-                resultados.append({"filename": f"texto_{idx+1}", "erro": "Não foi possível encontrar texto no arquivo"})
+                resultados.append(
+                    {"filename": f"texto_{idx + 1}", "erro": "Não foi possível encontrar texto no arquivo"})
                 continue
             categoria = classify_text(texto)
             resposta = generate_gemini_response(categoria, texto)
             resultados.append({
-                "filename": f"texto_{idx+1}",
+                "filename": f"texto_{idx + 1}",
                 "categoria": categoria,
                 "resposta_sugerida": resposta,
                 "texto_extraido": texto if len(texto) <= 300 else texto[:300] + "..."
