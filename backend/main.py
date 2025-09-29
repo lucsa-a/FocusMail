@@ -8,9 +8,8 @@ from fastapi.templating import Jinja2Templates
 from utils import extract_text_from_pdf, preprocess_text
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from typing import List, Optional
-import torch
-
 from google import genai
+import torch
 
 load_dotenv()
 
@@ -157,7 +156,7 @@ async def processar_email_html(
                 "filename": f"texto_{idx+1}",
                 "categoria": categoria,
                 "resposta_sugerida": resposta,
-                "texto_extraido": ttexto if len(texto) <= 300 else texto[:300] + "..."
+                "texto_extraido": texto if len(texto) <= 300 else texto[:300] + "..."
             })
 
     # 🔹 Calcula estatísticas de produtividade

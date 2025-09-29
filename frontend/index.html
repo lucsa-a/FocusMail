@@ -29,7 +29,7 @@
 
       <form action="/processar_email_html" method="post" enctype="multipart/form-data">
           <label for="arquivosButton" id="custom-file-button">📁 Escolher arquivos</label>
-          <input type="file" name="arquivos" multiple id="arquivosButton" style="display: none;" onchange="this.form.submit()">
+          <input type="file" name="arquivos" multiple id="arquivosButton" style="display: none;" accept=".pdf,.txt" onchange="this.form.submit()">
       </form>
     </div>
   </div>
