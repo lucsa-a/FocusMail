@@ -1,15 +1,17 @@
 import os
+from typing import List, Optional
+
+import torch
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from utils import extract_text_from_pdf, preprocess_text
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from typing import List, Optional
 from google import genai
-import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+from utils import extract_text_from_pdf, preprocess_text
 
 load_dotenv()
 
