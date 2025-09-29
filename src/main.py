@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google import genai
 
-from src.utils import extract_text_from_pdf, preprocess_text
+from utils import extract_text_from_pdf, preprocess_text
 
 load_dotenv()
 
