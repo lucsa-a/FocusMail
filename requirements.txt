@@ -7,3 +7,4 @@ jinja2
 google-genai
 gradio_client
 python-multipart
+python-magic-bin

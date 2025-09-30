@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google import genai
 from pathlib import Path
+import magic
 
 from src.utils import *
 
@@ -119,6 +120,8 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
         print(f"Erro ao chamar a API Gemini: {e}")
         return fallback_response
 
+MAX_FILE_SIZE = 5 * 1024 * 1024
+
 # --- Endpoints ---
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -135,8 +138,21 @@ async def processar_email_html(
     if arquivos:
         for arquivo in arquivos:
             contents = await arquivo.read()
+
+            if len(contents) > MAX_FILE_SIZE:
+                resultados.append({"filename": arquivo.filename, "erro": "Arquivo muito grande (>5MB)"})
+                continue
+
             if not contents:
                 resultados.append({"filename": arquivo.filename, "erro": "Arquivo vazio"})
+                continue
+
+            mime_type = magic.from_buffer(contents, mime=True)
+            if arquivo.filename.lower().endswith(".txt") and mime_type not in ["text/plain"]:
+                resultados.append({"filename": arquivo.filename, "erro": f"MIME inesperado: {mime_type}"})
+                continue
+            elif arquivo.filename.lower().endswith(".pdf") and mime_type not in ["application/pdf"]:
+                resultados.append({"filename": arquivo.filename, "erro": f"MIME inesperado: {mime_type}"})
                 continue
 
             arquivo.file.seek(0)
@@ -150,9 +166,6 @@ async def processar_email_html(
                 except Exception as e:
                     resultados.append({"filename": arquivo.filename, "erro": f"Erro na extração do PDF: {e}"})
                     continue
-            else:
-                resultados.append({"filename": arquivo.filename, "erro": "Formato não suportado"})
-                continue
 
             if not texto.strip():
                 resultados.append({"filename": arquivo.filename, "erro": "Não foi possível encontrar texto no arquivo"})
@@ -183,7 +196,6 @@ async def processar_email_html(
 
     total = len([r for r in resultados if "erro" not in r])
     produtivos = len([r for r in resultados if r.get("categoria", "").lower() == "produtivo"])
-    improdutivos = len([r for r in resultados if r.get("categoria", "").lower() == "improdutivo"])
 
     porcentagem_produtivos = int((produtivos / total) * 100) if total > 0 else 0
     porcentagem_improdutivos = 100 - porcentagem_produtivos if total > 0 else 0
