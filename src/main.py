@@ -57,6 +57,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+MAX_TEXTO_MODELO = 4000
+
 # --- Funções ---
 def classify_text(texto: str) -> str:
     if not texto.strip():
@@ -64,18 +66,18 @@ def classify_text(texto: str) -> str:
 
     texto = preprocess_text(texto)
 
+    if len(texto) > MAX_TEXTO_MODELO:
+        texto = texto[:MAX_TEXTO_MODELO]
+
     if hf_client is None:
         return "Indefinido"
 
     try:
-
         resultado = hf_client.predict(
             texto,
             api_name="/predict"
         )
-
         return str(resultado).capitalize()
-
     except Exception as e:
         print(f"Erro ao chamar o Hugging Face Space (Gradio Client): {e}")
         return "Indefinido"
