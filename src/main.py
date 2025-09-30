@@ -1,15 +1,16 @@
 import os
+from pathlib import Path
 from typing import List, Optional
+
+import magic
 from dotenv import load_dotenv
-from gradio_client import Client
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google import genai
-from pathlib import Path
-import magic
+from gradio_client import Client
 
 from src.utils import *
 
@@ -59,6 +60,7 @@ app.add_middleware(
 
 MAX_TEXTO_MODELO = 4000
 
+
 # --- Funções ---
 def classify_text(texto: str) -> str:
     if not texto.strip():
@@ -81,6 +83,7 @@ def classify_text(texto: str) -> str:
     except Exception as e:
         print(f"Erro ao chamar o Hugging Face Space (Gradio Client): {e}")
         return "Indefinido"
+
 
 def generate_gemini_response(categoria: str, texto_original: str) -> str:
     """Gera uma resposta contextual usando o modelo Gemini ou retorna fallback."""
@@ -130,18 +133,21 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
             print(f"Aviso: Erro ao chamar gemini-2.0-flash-lite (fallback): {e2}")
             return fallback_response
 
+
 MAX_FILE_SIZE = 5 * 1024 * 1024
+
 
 # --- Endpoints ---
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
 @app.post("/processar_email_html")
 async def processar_email_html(
-    request: Request,
-    arquivos: Optional[List[UploadFile]] = File(None),
-    textos: Optional[List[str]] = Form(None)
+        request: Request,
+        arquivos: Optional[List[UploadFile]] = File(None),
+        textos: Optional[List[str]] = Form(None)
 ):
     resultados = []
 
@@ -193,7 +199,8 @@ async def processar_email_html(
     if textos:
         for idx, texto in enumerate(textos):
             if texto.strip() == "":
-                resultados.append({"filename": f"texto_{idx + 1}", "erro": "Não foi possível encontrar texto no arquivo"})
+                resultados.append(
+                    {"filename": f"texto_{idx + 1}", "erro": "Não foi possível encontrar texto no arquivo"})
                 continue
             categoria = classify_text(texto)
             resposta = generate_gemini_response(categoria, texto)
