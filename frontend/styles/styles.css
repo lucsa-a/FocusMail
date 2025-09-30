@@ -170,11 +170,6 @@ li {
 .nome-arquivo {
     font-weight: 500;
 }
-  
-.texto, .resposta {
-    display: block;
-    word-break: break-word;
-}
 
 .resultado-item.produtivo {
     background-color: #dcf6cb;
@@ -218,4 +213,14 @@ progress::-moz-progress-bar {
     justify-content: space-between;
     margin-bottom: 1em;
     font-size: 25px;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+.erro {
+    color: red;
 }
