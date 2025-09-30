@@ -119,8 +119,16 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
         )
         return response.text.strip()
     except Exception as e:
-        print(f"Erro ao chamar a API Gemini: {e}")
-        return fallback_response
+        print(f"Aviso: Erro ao chamar gemini-2.5-flash: {e}")
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.0-flash-lite',
+                contents=prompt
+            )
+            return response.text.strip()
+        except Exception as e2:
+            print(f"Aviso: Erro ao chamar gemini-2.0-flash-lite (fallback): {e2}")
+            return fallback_response
 
 MAX_FILE_SIZE = 5 * 1024 * 1024
 
