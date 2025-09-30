@@ -55,21 +55,23 @@ app.add_middleware(
 
 # --- Funções ---
 def classify_text(texto: str) -> str:
-    """Classifica o texto usando o Gradio Client."""
     if not texto.strip():
         return "Indefinido"
 
-    texto = preprocess_text(texto) 
-    
+    texto = preprocess_text(texto)
+
     if hf_client is None:
         return "Indefinido"
 
     try:
+
         resultado = hf_client.predict(
-            texto=texto,
+            texto,
             api_name="/predict"
         )
-        return resultado.capitalize()
+
+        return str(resultado).capitalize()
+
     except Exception as e:
         print(f"Erro ao chamar o Hugging Face Space (Gradio Client): {e}")
         return "Indefinido"
