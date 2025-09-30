@@ -8,10 +8,15 @@ from typing import List, Optional
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=[
+        "https://focus-mail-two.vercel.app",
+        "http://localhost:3000"
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
 
 class EmailInput(BaseModel):
     textos: Optional[List[str]] = None
