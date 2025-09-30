@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 from google import genai
 from pathlib import Path
 
-from src.utils import extract_text_from_pdf, preprocess_text
+from src.utils import *
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
@@ -143,6 +143,7 @@ async def processar_email_html(
             elif arquivo.filename.lower().endswith(".pdf"):
                 try:
                     texto = extract_text_from_pdf(arquivo.file)
+                    texto = normalize_pdf_text(texto)
                 except Exception as e:
                     resultados.append({"filename": arquivo.filename, "erro": f"Erro na extração do PDF: {e}"})
                     continue

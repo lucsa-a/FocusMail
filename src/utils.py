@@ -35,3 +35,10 @@ def preprocess_text(texto: str) -> str:
     palavras_processadas = [stemmer.stem(p) for p in palavras if p not in stop_words]
 
     return " ".join(palavras_processadas)
+
+def normalize_pdf_text(texto: str) -> str:
+    texto = re.sub(r'(?<!\n)\n(?!\n)', ' ', texto)
+    texto = re.sub(r'\n{2,}', '\n\n', texto)
+    texto = re.sub(r'[ \t]+', ' ', texto)
+    texto = "\n".join([linha.strip() for linha in texto.splitlines()])
+    return texto
