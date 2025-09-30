@@ -8,7 +8,7 @@ from nltk.stem import SnowballStemmer
 try:
     stop_words = set(stopwords.words('portuguese'))
 except LookupError:
-    nltk.data.path.append("src/nltk_data") 
+    nltk.data.path.append("src/nltk_data")
 
 stop_words = set(stopwords.words('portuguese'))
 stemmer = SnowballStemmer('portuguese')
@@ -35,6 +35,7 @@ def preprocess_text(texto: str) -> str:
     palavras_processadas = [stemmer.stem(p) for p in palavras if p not in stop_words]
 
     return " ".join(palavras_processadas)
+
 
 def normalize_pdf_text(texto: str) -> str:
     texto = re.sub(r'(?<!\n)\n(?!\n)', ' ', texto)

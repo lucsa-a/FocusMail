@@ -1,14 +1,16 @@
 import os
+from pathlib import Path
 from typing import List, Optional
+
+import magic
 from dotenv import load_dotenv
-from gradio_client import Client
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google import genai
-from pathlib import Path
+from gradio_client import Client
 
 from src.utils import *
 
@@ -47,11 +49,17 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://focus-mail-two.vercel.app",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+MAX_TEXTO_MODELO = 4000
+
 
 # --- Funções ---
 def classify_text(texto: str) -> str:
@@ -60,21 +68,22 @@ def classify_text(texto: str) -> str:
 
     texto = preprocess_text(texto)
 
+    if len(texto) > MAX_TEXTO_MODELO:
+        texto = texto[:MAX_TEXTO_MODELO]
+
     if hf_client is None:
         return "Indefinido"
 
     try:
-
         resultado = hf_client.predict(
             texto,
             api_name="/predict"
         )
-
         return str(resultado).capitalize()
-
     except Exception as e:
         print(f"Erro ao chamar o Hugging Face Space (Gradio Client): {e}")
         return "Indefinido"
+
 
 def generate_gemini_response(categoria: str, texto_original: str) -> str:
     """Gera uma resposta contextual usando o modelo Gemini ou retorna fallback."""
@@ -113,27 +122,53 @@ def generate_gemini_response(categoria: str, texto_original: str) -> str:
         )
         return response.text.strip()
     except Exception as e:
-        print(f"Erro ao chamar a API Gemini: {e}")
-        return fallback_response
+        print(f"Aviso: Erro ao chamar gemini-2.5-flash: {e}")
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.0-flash-lite',
+                contents=prompt
+            )
+            return response.text.strip()
+        except Exception as e2:
+            print(f"Aviso: Erro ao chamar gemini-2.0-flash-lite (fallback): {e2}")
+            return fallback_response
+
+
+MAX_FILE_SIZE = 5 * 1024 * 1024
+
 
 # --- Endpoints ---
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
 @app.post("/processar_email_html")
 async def processar_email_html(
-    request: Request,
-    arquivos: Optional[List[UploadFile]] = File(None),
-    textos: Optional[List[str]] = Form(None)
+        request: Request,
+        arquivos: Optional[List[UploadFile]] = File(None),
+        textos: Optional[List[str]] = Form(None)
 ):
     resultados = []
 
     if arquivos:
         for arquivo in arquivos:
             contents = await arquivo.read()
+
+            if len(contents) > MAX_FILE_SIZE:
+                resultados.append({"filename": arquivo.filename, "erro": "Arquivo muito grande (>5MB)"})
+                continue
+
             if not contents:
                 resultados.append({"filename": arquivo.filename, "erro": "Arquivo vazio"})
+                continue
+
+            mime_type = magic.from_buffer(contents, mime=True)
+            if arquivo.filename.lower().endswith(".txt") and mime_type not in ["text/plain"]:
+                resultados.append({"filename": arquivo.filename, "erro": f"MIME inesperado: {mime_type}"})
+                continue
+            elif arquivo.filename.lower().endswith(".pdf") and mime_type not in ["application/pdf"]:
+                resultados.append({"filename": arquivo.filename, "erro": f"MIME inesperado: {mime_type}"})
                 continue
 
             arquivo.file.seek(0)
@@ -147,9 +182,6 @@ async def processar_email_html(
                 except Exception as e:
                     resultados.append({"filename": arquivo.filename, "erro": f"Erro na extração do PDF: {e}"})
                     continue
-            else:
-                resultados.append({"filename": arquivo.filename, "erro": "Formato não suportado"})
-                continue
 
             if not texto.strip():
                 resultados.append({"filename": arquivo.filename, "erro": "Não foi possível encontrar texto no arquivo"})
@@ -167,7 +199,8 @@ async def processar_email_html(
     if textos:
         for idx, texto in enumerate(textos):
             if texto.strip() == "":
-                resultados.append({"filename": f"texto_{idx + 1}", "erro": "Não foi possível encontrar texto no arquivo"})
+                resultados.append(
+                    {"filename": f"texto_{idx + 1}", "erro": "Não foi possível encontrar texto no arquivo"})
                 continue
             categoria = classify_text(texto)
             resposta = generate_gemini_response(categoria, texto)
@@ -180,7 +213,6 @@ async def processar_email_html(
 
     total = len([r for r in resultados if "erro" not in r])
     produtivos = len([r for r in resultados if r.get("categoria", "").lower() == "produtivo"])
-    improdutivos = len([r for r in resultados if r.get("categoria", "").lower() == "improdutivo"])
 
     porcentagem_produtivos = int((produtivos / total) * 100) if total > 0 else 0
     porcentagem_improdutivos = 100 - porcentagem_produtivos if total > 0 else 0
