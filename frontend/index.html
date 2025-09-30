@@ -18,20 +18,49 @@
         <h1 id="logoTitulo">FocusMail</h1>
       </a>
     </header>
-
     <div id="conteudo">
       <h2>Classifique seus e-mails</h2>
 
-      <form action="/processar_email_html" method="post">
-          <textarea name="textos" rows="5" placeholder="Digite ou cole o texto do e-mail"></textarea>
+      <form action="/processar_email_html" method="post" id="formTexto">
+          <textarea id="textarea" name="textos" rows="5" placeholder="Digite ou cole o texto do corpo do e-mail"></textarea>
           <button type="submit" id="classificarButton">Classificar</button>
       </form>
 
       <form action="/processar_email_html" method="post" enctype="multipart/form-data">
           <label for="arquivosButton" id="custom-file-button">📁 Escolher arquivos</label>
-          <input type="file" name="arquivos" multiple id="arquivosButton" style="display: none;" accept=".pdf,.txt" onchange="this.form.submit()">
+          <input 
+              type="file" 
+              name="arquivos" 
+              multiple 
+              id="arquivosButton" 
+              style="display: none;" 
+              accept=".pdf,.txt" 
+              onchange="document.getElementById('loading').style.display = 'flex'; this.form.submit();"
+          >
       </form>
     </div>
   </div>
+  
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Classificando arquivos, por favor aguarde...</p>
+  </div>
+
+  <script>
+    const formTexto = document.getElementById('formTexto');
+
+    if (formTexto) {
+      formTexto.addEventListener('submit', () => {
+        document.getElementById('loading').style.display = 'flex';
+      });
+    }
+    var textarea = document.getElementById("textarea");
+    var heightLimit = 200;
+
+    textarea.oninput = function() {
+      textarea.style.height = "";
+      textarea.style.height = Math.min(textarea.scrollHeight, heightLimit) + "px";
+    };
+  </script>
 </body>
 </html>

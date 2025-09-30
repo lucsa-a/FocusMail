@@ -52,10 +52,10 @@
                 <div class="erro" role="alert"><span>Erro: {{ r.erro }}</span></div>
               {% else %}
                 <strong>{{ r.categoria }}</strong>
-                <div class="texto">{{ r.texto_extraido }}</div>
+                <pre class="texto">{{ r.texto_extraido }}</pre>
                 <div class="resposta">
                   <strong>Resposta sugerida:</strong>
-                  <div class="resposta-texto">{{ r.resposta_sugerida }}</div>
+                  <pre class="resposta-texto">{{ r.resposta_sugerida }}</pre>
                 </div>
             {% endif %}
           </li>
