@@ -117,7 +117,7 @@ ul {
 	width: 57%;
 	gap: 1em;
 	justify-content: flex-start;
-	margin-bottom: 1em;
+	margin-bottom: .5em;
 	overflow-y: auto;
 	max-height: 50vh;
 }
@@ -223,4 +223,22 @@ pre {
 	100% {
 		transform: rotate(360deg);
 	}
+}
+
+.porcentagem, #botaoLimpar {
+	cursor: pointer;
+	transition: transform 0.3s ease;
+}
+
+.porcentagem:hover, #botaoLimpar:hover {
+	transform: scale(1.1);
+}
+
+#botaoLimpar {
+	background-color: #FFFFFF;
+	border: none;
+	color: #6c6c6c;
+	font-family: 'Inter', sans-serif;
+	font-size: 24px;
+	margin-bottom: 1em;
 }

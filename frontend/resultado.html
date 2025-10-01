@@ -35,6 +35,8 @@
         </div>
     </div>
 
+    <button id="botaoLimpar">Limpar Seleção</button>
+
     {% if resultados %}
         <ul>
         {% for r in resultados %}
@@ -65,5 +67,44 @@
         <p>Nenhum resultado encontrado.</p>
     {% endif %}
   </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnProdutivo = document.querySelector("#porcentagens .porcentagem:first-child");
+      const btnImprodutivo = document.querySelector("#porcentagens .porcentagem:last-child");
+      const limparBtn = document.querySelector("#botaoLimpar");
+      const lista = document.querySelectorAll(".resultado-item");
+  
+      limparBtn.textContent = "Selecione alguma porcentagem para filtrar e-mails";
+  
+      function mostrarTodos() {
+        lista.forEach(li => li.style.display = "");
+        limparBtn.textContent = "Selecione alguma porcentagem para filtrar e-mails";
+      }
+  
+      btnProdutivo.addEventListener("click", () => {
+        lista.forEach(li => {
+          if (li.classList.contains("produtivo")) {
+            li.style.display = "";
+          } else {
+            li.style.display = "none";
+          }
+        });
+        limparBtn.textContent = "Limpar Seleção";
+      });
+  
+      btnImprodutivo.addEventListener("click", () => {
+        lista.forEach(li => {
+          if (li.classList.contains("improdutivo")) {
+            li.style.display = "";
+          } else {
+            li.style.display = "none";
+          }
+        });
+        limparBtn.textContent = "Limpar Seleção";
+      });
+  
+      limparBtn.addEventListener("click", mostrarTodos);
+    });
+  </script>  
 </body>
 </html>

@@ -86,7 +86,6 @@ def classify_text(texto: str) -> str:
 
 
 def generate_gemini_response(categoria: str, texto_original: str) -> str:
-    """Gera uma resposta contextual usando o modelo Gemini ou retorna fallback."""
     fallback_response = "Obrigado pelo envio. Resposta automática dinâmica indisponível."
     if categoria.lower() == "produtivo":
         fallback_response = "Obrigado pelo envio, iremos avaliar e daremos retorno em breve."
