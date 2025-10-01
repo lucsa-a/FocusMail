@@ -48,7 +48,7 @@ pip3 install -r requirements.txt
 ### Local
 
 ```bash
-uvicorn backend.main:app --reload
+uvicorn src.main:app --reload
 ```
 
 Acesse em: ```http://localhost:8000```
