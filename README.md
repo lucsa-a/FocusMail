@@ -19,7 +19,7 @@ O sistema utiliza **FastAPI**, integração com **Hugging Face Spaces** e **Goog
 
 ## 🤖 Modelos de IA
 
-- Classificação de e-mails usando um modelo treinado e hospedado no **Hugging Face Spaces**.
+- Classificação de e-mails usando um [modelo treinado e hospedado no **Hugging Face Spaces**](https://huggingface.co/spaces/lucsaa/FocusMail).
 - Respostas automáticas geradas com **Google Gemini**, ajustadas com prompts específicos para cada categoria de e-mail.
 - Pré-processamento de texto com **NLTK** (remoção de stopwords, stemming, limpeza de caracteres especiais).
 
