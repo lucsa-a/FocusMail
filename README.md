@@ -2,7 +2,7 @@
   <a href="https://focus-mail-two.vercel.app"><img width="411" height="141" alt="Logo FocusMail" src="https://github.com/user-attachments/assets/881c1ffc-9ff4-4028-a4a1-ce222b7d0414" /></a>
 </p>
 
-FocusMail é uma aplicação de IA que classifica e sugera respostas para e-mails para empresas do setor financeiro.  
+FocusMail é uma aplicação de IA que classifica e sugera respostas para e-mails recebidos por empresas do setor financeiro.  
 O sistema utiliza **FastAPI**, integração com **Hugging Face Spaces** e **Google Gemini** para classificar mensagens como **Produtivas** ou **Improdutivas**, além de sugerir respostas automáticas baseadas na classificação do e-mail.
 
 ---
